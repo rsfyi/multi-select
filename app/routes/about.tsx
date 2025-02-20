@@ -11,7 +11,12 @@ interface Product {
   id: number;
   title: string;
   category: string;
-  isProductSelected?: boolean;
+}
+
+interface ProductOption {
+  id: string;
+  productName: string;
+  isChecked: boolean;
 }
 
 const schema = z.object({
@@ -20,6 +25,7 @@ const schema = z.object({
 
 export default function About() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [productOptions, setProductOptions] = useState<ProductOption[]>([]);
   const [loading, setLoading] = useState(false);
 
   const form = useForm({
@@ -45,20 +51,23 @@ export default function About() {
       const response = await fetch("https://dummyjson.com/products?limit=200");
       const data = await response.json();
 
-      // Mark all products as selected (simulating API response)
-      const productsWithSelection = data.products.map((product: Product) => ({
-        ...product,
-        isProductSelected: true,
-      }));
+      // Store base product data
+      setProducts(data.products);
 
-      setProducts(productsWithSelection);
+      // Create product options with all selected initially
+      const options: ProductOption[] = data.products.map(
+        (product: Product) => ({
+          id: product.id.toString(),
+          productName: product.title,
+          isChecked: true,
+        })
+      );
 
-      // Get IDs of pre-selected products and update form
-      const preSelectedIds = productsWithSelection
-        .filter((p) => p.isProductSelected)
-        .map((p) => p.id.toString());
+      setProductOptions(options);
 
-      setValue("products", preSelectedIds, { shouldValidate: true });
+      // Set initial selected values in form
+      const initialSelectedIds = options.map((option) => option.id);
+      setValue("products", initialSelectedIds, { shouldValidate: true });
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -66,10 +75,18 @@ export default function About() {
     }
   };
 
-  const productOptions = products.map((product) => ({
-    value: product.id.toString(),
-    label: product.title,
-  }));
+  const handleValueChange = (value: string[]) => {
+    // Update form value
+    setValue("products", value, { shouldValidate: true });
+
+    // Update isChecked state in productOptions
+    setProductOptions((prevOptions) =>
+      prevOptions.map((option) => ({
+        ...option,
+        isChecked: value.includes(option.id),
+      }))
+    );
+  };
 
   const onSubmit = handleSubmit((data) => {
     const selectedProductTitles = data.products
@@ -91,9 +108,7 @@ export default function About() {
             <label className="text-sm font-medium">Products</label>
             <MultiSelect
               options={productOptions}
-              onValueChange={(value) =>
-                setValue("products", value, { shouldValidate: true })
-              }
+              onValueChange={handleValueChange}
               value={selectedProducts}
               placeholder="Select products"
               variant="inverted"
