@@ -229,14 +229,14 @@ export const MultiSelect = React.forwardRef<
         }}
         modal={modalPopover}
       >
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild className="relative">
           <Button
             ref={ref}
             variant="outline"
             role="combobox"
             aria-expanded={isPopoverOpen}
             className={cn(
-              "w-full justify-between relative px-3 py-1.5 min-h-[36px] flex items-center",
+              "w-full justify-between relative px-3 py-1.5 flex items-center h-auto",
               className
             )}
             {...props}
