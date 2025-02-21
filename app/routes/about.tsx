@@ -16,7 +16,7 @@ interface Product {
 interface ProductOption {
   id: string;
   productName: string;
-  isSelectedForProduct: boolean;
+  isSelectedForProductBenefit: boolean;
 }
 
 const schema = z.object({
@@ -59,7 +59,7 @@ export default function About() {
         (product: Product) => ({
           id: product.id.toString(),
           productName: product.title,
-          isSelectedForProduct: true,
+          isSelectedForProductBenefit: true,
         })
       );
 
@@ -83,7 +83,7 @@ export default function About() {
     setProductOptions((prevOptions) =>
       prevOptions.map((option) => ({
         ...option,
-        isSelectedForProduct: value.includes(option.id),
+        isSelectedForProductBenefit: value.includes(option.id),
       }))
     );
   };
@@ -113,7 +113,7 @@ export default function About() {
               placeholder="Select products"
               variant="inverted"
               animation={2}
-              maxCount={1}
+              maxCount={3}
               onOpen={fetchProducts}
               loading={loading}
             />

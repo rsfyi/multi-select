@@ -60,15 +60,15 @@ interface MultiSelectProps
     VariantProps<typeof multiSelectVariants> {
   /**
    * An array of option objects to be displayed in the multi-select component.
-   * Each option object has a product name, id, and an optional isSelectedForProduct flag.
+   * Each option object has a product name, id, and an optional isSelectedForProductBenefit flag.
    */
   options: {
     /** The product name to display for the option. */
     productName: string;
     /** The unique identifier associated with the option. */
     id: string;
-    /** Boolean flag to indicate if the option is selected for the product. */
-    isSelectedForProduct: boolean;
+    /** Boolean flag to indicate if the option is selected for product benefit. */
+    isSelectedForProductBenefit: boolean;
   }[];
 
   /**
@@ -181,10 +181,11 @@ export const MultiSelect = React.forwardRef<
       setSelectedValues(newSelectedValues);
       onValueChange(newSelectedValues);
 
-      // Update isSelectedForProduct in options
+      // Update isSelectedForProductBenefit in options
       options.forEach((option) => {
         if (option.id === id) {
-          option.isSelectedForProduct = !option.isSelectedForProduct;
+          option.isSelectedForProductBenefit =
+            !option.isSelectedForProductBenefit;
         }
       });
     };
@@ -195,12 +196,14 @@ export const MultiSelect = React.forwardRef<
 
       // Update all options to unselected
       options.forEach((option) => {
-        option.isSelectedForProduct = false;
+        option.isSelectedForProductBenefit = false;
       });
     };
 
     const handleToggleAll = () => {
-      const allChecked = options.every((option) => option.isSelectedForProduct);
+      const allChecked = options.every(
+        (option) => option.isSelectedForProductBenefit
+      );
       if (allChecked) {
         handleClear();
       } else {
@@ -210,7 +213,7 @@ export const MultiSelect = React.forwardRef<
 
         // Update all options to selected
         options.forEach((option) => {
-          option.isSelectedForProduct = true;
+          option.isSelectedForProductBenefit = true;
         });
       }
     };
@@ -232,7 +235,10 @@ export const MultiSelect = React.forwardRef<
             variant="outline"
             role="combobox"
             aria-expanded={isPopoverOpen}
-            className={cn("w-full justify-between relative px-3 py-1.5 min-h-[36px] flex items-center", className)}
+            className={cn(
+              "w-full justify-between relative px-3 py-1.5 min-h-[36px] flex items-center",
+              className
+            )}
             {...props}
           >
             <div className="flex items-center flex-wrap gap-1 pe-8">
@@ -260,7 +266,10 @@ export const MultiSelect = React.forwardRef<
                     ) : null;
                   })}
                   {selectedValues.length > maxCount && (
-                    <Badge variant="secondary" className="text-xs inline-flex items-center h-5 px-1.5 py-0">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs inline-flex items-center h-5 px-1.5 py-0"
+                    >
                       +{selectedValues.length - maxCount} more
                     </Badge>
                   )}
@@ -269,64 +278,65 @@ export const MultiSelect = React.forwardRef<
                 <span className="text-muted-foreground">{placeholder}</span>
               )}
             </div>
-            {loading ? (
-              <Loader2 className="h-4 w-4 shrink-0 opacity-50 animate-spin absolute right-2 top-[50%] -translate-y-[50%]" />
-            ) : (
-              <ChevronDown className="h-4 w-4 shrink-0 opacity-50 absolute right-2 top-[50%] -translate-y-[50%]" />
-            )}
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-50 absolute right-2 top-[50%] -translate-y-[50%]" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
+        <PopoverContent
+          className="p-0 w-[--radix-popover-trigger-width]"
+          align="start"
+          sideOffset={4}
+        >
           <Command className="flex flex-col h-[300px]">
             <CommandInput placeholder="Search..." className="flex-none" />
             <CommandList className="flex-grow overflow-auto">
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup>
-                {loading ? (
-                  <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading products...
-                  </div>
-                ) : (
-                  <>
+              {loading ? (
+                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Loading products...
+                </div>
+              ) : options.length === 0 ? (
+                <CommandEmpty>No results found.</CommandEmpty>
+              ) : (
+                <CommandGroup>
+                  <CommandItem
+                    onSelect={handleToggleAll}
+                    className="cursor-pointer"
+                  >
+                    <div
+                      className={cn(
+                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                        options.every(
+                          (option) => option.isSelectedForProductBenefit
+                        )
+                          ? "bg-primary text-primary-foreground"
+                          : "opacity-50 [&_svg]:invisible"
+                      )}
+                    >
+                      <CheckIcon className="h-4 w-4" />
+                    </div>
+                    <span>Select All</span>
+                  </CommandItem>
+                  {options.map((option) => (
                     <CommandItem
-                      onSelect={handleToggleAll}
+                      key={option.id}
+                      onSelect={() => handleToggleOption(option.id)}
                       className="cursor-pointer"
                     >
                       <div
                         className={cn(
                           "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                          options.every((option) => option.isSelectedForProduct)
+                          option.isSelectedForProductBenefit
                             ? "bg-primary text-primary-foreground"
                             : "opacity-50 [&_svg]:invisible"
                         )}
                       >
                         <CheckIcon className="h-4 w-4" />
                       </div>
-                      <span>Select All</span>
+                      <span>{option.productName}</span>
                     </CommandItem>
-                    {options.map((option) => (
-                      <CommandItem
-                        key={option.id}
-                        onSelect={() => handleToggleOption(option.id)}
-                        className="cursor-pointer"
-                      >
-                        <div
-                          className={cn(
-                            "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                            option.isSelectedForProduct
-                              ? "bg-primary text-primary-foreground"
-                              : "opacity-50 [&_svg]:invisible"
-                          )}
-                        >
-                          <CheckIcon className="h-4 w-4" />
-                        </div>
-                        <span>{option.productName}</span>
-                      </CommandItem>
-                    ))}
-                  </>
-                )}
-              </CommandGroup>
+                  ))}
+                </CommandGroup>
+              )}
             </CommandList>
             <div className="border-t flex p-2 items-center justify-between flex-none">
               <Button
