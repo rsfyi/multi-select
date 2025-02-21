@@ -16,7 +16,7 @@ interface Product {
 interface ProductOption {
   id: string;
   productName: string;
-  isChecked: boolean;
+  isSelectedForProduct: boolean;
 }
 
 const schema = z.object({
@@ -59,7 +59,7 @@ export default function About() {
         (product: Product) => ({
           id: product.id.toString(),
           productName: product.title,
-          isChecked: true,
+          isSelectedForProduct: true,
         })
       );
 
@@ -79,11 +79,11 @@ export default function About() {
     // Update form value
     setValue("products", value, { shouldValidate: true });
 
-    // Update isChecked state in productOptions
+    // Update isSelectedForProduct state in productOptions
     setProductOptions((prevOptions) =>
       prevOptions.map((option) => ({
         ...option,
-        isChecked: value.includes(option.id),
+        isSelectedForProduct: value.includes(option.id),
       }))
     );
   };
@@ -113,7 +113,7 @@ export default function About() {
               placeholder="Select products"
               variant="inverted"
               animation={2}
-              maxCount={3}
+              maxCount={1}
               onOpen={fetchProducts}
               loading={loading}
             />
